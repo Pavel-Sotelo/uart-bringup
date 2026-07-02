@@ -170,11 +170,11 @@ TX and RX instantiated together, `tx_signal` wired directly from TX output to RX
 
 **Choosing a test byte:** the first attempt used an alternating pattern (`01010101`), producing a uniform square wave where every bit looks identical — impossible to tell which bit is which on screen.
 
-![Unclear waveform with alternating pattern](docs/oscilloscope_unclear_pattern.jpg)
+![Unclear waveform with alternating pattern](docs/oscilloscope_unclear_pattern.jpeg)
 
 Switched to **`8'b11001010`** (0xCA) instead — the mix of different run lengths makes individual start/data/stop bits visually distinguishable.
 
-![0xCA byte, back-to-back frames, full measurement panel](docs/oscilloscope_0xCA_no_idle.jpg)
+![0xCA byte, back-to-back frames, full measurement panel](docs/oscilloscope_0xCA_no_idle.png)
 
 - **Probe:** 10X attenuation
 - **Trigger:** falling edge, CH1, 1.64V (scope's closest setting to the 1.65V true midpoint of the 0–3.3V swing)
@@ -182,13 +182,15 @@ Switched to **`8'b11001010`** (0xCA) instead — the mix of different run length
 - **Note:** the scope's automatic `Freq`/`Duty` measurements assume a periodic signal — since a UART frame's bit pattern isn't strictly periodic, those auto-readings aren't meaningful here (e.g. `-Duty=102.3%` is not physically valid). The reliable measurement is direct pulse width (`+Wid`), taken on a single bit.
 - **Probe point:** Pmod TPH2 header, not pin A18 directly — A18 feeds into the Basys 3's onboard USB-UART bridge chip, not easily accessible for direct probing
 
+![Cursor measurement of a single bit width — 8.8µs](docs/oscilloscope_bit_cursor_measurement.jpeg)
+
 ### Design fix during bring-up: making IDLE visible on the scope
 
 The version above transmits back-to-back with `tx_start` held HIGH continuously — START, DATA, and STOP bits are all visible, but **IDLE never appears**, because unlike every other state, IDLE has no fixed duration unless something forces one.
 
 Fix: `bringup_5_oscilloscope_probe.sv` adds a dedicated `idle_counter` that holds `tx_start` LOW for exactly 868 cycles — the same width as every other bit — before pulsing it HIGH again. This gives IDLE the same visible width as START, DATA, and STOP on the scope.
 
-![0xCA byte with visible IDLE gap](docs/oscilloscope_0xCA_with_idle.jpg)
+![0xCA byte with visible IDLE gap](docs/oscilloscope_0xCA_with_idle.png)
 
 ---
 
