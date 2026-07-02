@@ -112,10 +112,10 @@ observes, so it can fold that behavior into states that already exist.
 
 | Test Case | Description                                          | Result |
 |-----------|-------------------------------------------------------|--------|
-| TC1       | Reset behavior — tx HIGH in IDLE after reset          | ✅ PASS |
-| TC2       | Normal transmission — byte 109 (0b01101101)           | ✅ PASS |
-| TC3       | Back-to-back bytes — 243 → 99, tx_start pulsed in STOP| ✅ PASS |
-| TC4       | Reset mid-DATA — reset asserted during bit 5 of byte 196 | ✅ PASS |
+| TC1       | Reset behavior — tx HIGH in IDLE after reset          | PASS |
+| TC2       | Normal transmission — byte 109 (0b01101101)           | PASS |
+| TC3       | Back-to-back bytes — 243 → 99, tx_start pulsed in STOP| PASS |
+| TC4       | Reset mid-DATA — reset asserted during bit 5 of byte 196 | PASS |
 
 **SVA (3):**
 - `p_idle_tx_high` — in IDLE, `tx` must always be HIGH
@@ -126,11 +126,11 @@ observes, so it can fold that behavior into states that already exist.
 
 | Test Case | Description                                              | Result |
 |-----------|-------------------------------------------------------------|--------|
-| TC1       | Reset behavior — done LOW in IDLE after reset              | ✅ PASS |
-| TC2       | Normal reception — byte 0b10011101, done pulses then clears| ✅ PASS |
-| TC3       | Missing stop bit — byte 0b00101010 with corrupted framing, FSM → ERROR, done stays LOW | ✅ PASS |
-| TC4       | Reset mid-frame — reset asserted after bit 2 of reception   | ✅ PASS |
-| TC5       | Back-to-back bytes — 0b11100101 → 0b01000001, second byte's data verified | ✅ PASS |
+| TC1       | Reset behavior — done LOW in IDLE after reset              | PASS |
+| TC2       | Normal reception — byte 0b10011101, done pulses then clears| PASS |
+| TC3       | Missing stop bit — byte 0b00101010 with corrupted framing, FSM → ERROR, done stays LOW | PASS |
+| TC4       | Reset mid-frame — reset asserted after bit 2 of reception   | PASS |
+| TC5       | Back-to-back bytes — 0b11100101 → 0b01000001, second byte's data verified | PASS |
 
 **SVA (2):**
 - `p_idle_done_low` — in IDLE, `done` must always be LOW
@@ -142,10 +142,10 @@ TX and RX instantiated together, `tx_signal` wired directly from TX output to RX
 
 | Test Case | Description                                            | Result |
 |-----------|------------------------------------------------------------|--------|
-| TC1       | Reset behavior — tx_signal HIGH in IDLE after reset       | ✅ PASS |
-| TC2       | Normal end-to-end transfer — byte 150, `rx_byte === expected_byte` | ✅ PASS |
-| TC3       | Back-to-back — 35 → 243, both bytes verified end-to-end   | ✅ PASS |
-| TC4       | Reset mid-DATA transfer — byte 196, reset during bit 5     | ✅ PASS |
+| TC1       | Reset behavior — tx_signal HIGH in IDLE after reset       | PASS |
+| TC2       | Normal end-to-end transfer — byte 150, `rx_byte === expected_byte` | PASS |
+| TC3       | Back-to-back — 35 → 243, both bytes verified end-to-end   | PASS |
+| TC4       | Reset mid-DATA transfer — byte 196, reset during bit 5     | PASS |
 
 **SVA (4):** same 3 from TX, plus:
 - `p_idle_done_low` — in RX IDLE, `done` must always be LOW
@@ -260,7 +260,7 @@ disconnect anything from live digital hardware.
 ## How to Simulate
 
 ### Requirements
-- Xilinx Vivado 2023.x or later (any edition with the simulator, xsim)
+- Xilinx Vivado
 - Basys 3 board — only needed for hardware validation, not for simulation
 
 ### Setting up the project
