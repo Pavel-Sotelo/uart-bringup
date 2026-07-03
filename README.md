@@ -152,6 +152,20 @@ TX and RX instantiated together, `tx_signal` wired directly from TX output to RX
 
 **Key check:** `rx_byte !== expected_byte` inside `verify_tx()` — this is the actual end-to-end proof that TX and RX agree on every bit of every byte transmitted.
 
+### Simulation waveforms
+
+**Loopback end-to-end** — `tx_signal`, `rx_byte`, and `done` together, showing a byte transmitted by TX and correctly received by RX:
+
+![Loopback waveform](docs/waveform_loopback_complete.png)
+
+**IDLE → START in 1 cycle, not 868** — direct visual proof of Bug 4: `state` jumps from `0` (IDLE) to `1` (START) in a single clock edge right as `tx_start` goes HIGH, unlike every other transition in the same waveform which takes hundreds of cycles:
+
+![TX IDLE to START transition](docs/waveform_tx_idle_to_start.png)
+
+**RX detecting a corrupted stop bit (LOW)** — `state` jumps from `1` (DATA) to `3` (ERROR) instead of `2` (DONE), and `done` stays LOW — confirms the FSM never reports a corrupted frame as a valid received byte:
+
+![RX ERROR state](docs/waveform_rx_error_state.png)
+
 ---
 
 ## Hardware Validation — Basys 3 (Artix-7 XC7A35T)

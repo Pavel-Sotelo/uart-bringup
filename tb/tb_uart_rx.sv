@@ -1,6 +1,5 @@
 `timescale 1ns / 1ps
 
-
 module tb_uart_rx();
 
     //Signal declarations
@@ -11,7 +10,8 @@ module tb_uart_rx();
 
     int i;
 
-    localparam CLK_PERIOD = 10;   //10ns period
+    localparam CLK_PERIOD = 10;      //10ns period
+    localparam BIT_TIME   = 868;     //cycles per UART bit 
 
     //DUT instantiation
 
@@ -40,19 +40,19 @@ module tb_uart_rx();
 
             //Start bit
             rx = 0;
-            repeat(868) @(posedge clk);
+            repeat(BIT_TIME) @(posedge clk);
             #1;
 
             //8 data bits
             for (i = 0; i < 8; i = i + 1) begin
                 rx = data[i];
-                repeat(868) @(posedge clk);
+                repeat(BIT_TIME) @(posedge clk);
                 #1;
             end
 
             //Stop bit (or deliberately broken stop bit for TC3)
             rx = stop_bit;
-            repeat(868) @(posedge clk);
+            repeat(BIT_TIME) @(posedge clk);
             #1;
 
         end
@@ -70,7 +70,6 @@ module tb_uart_rx();
         check_p_idle_done_low: assert property (p_idle_done_low)
             else $display("DONE LOW IN IDLE STATE ASSERTION FAILED at time %0t", $time);
 
-
         //SVA 2. When state is ERROR, done must always be LOW
 
         property p_error_done_low;
@@ -82,7 +81,6 @@ module tb_uart_rx();
             else $display("DONE LOW IN ERROR STATE ASSERTION FAILED at time %0t", $time);
 
     //End of SVA
-
 
     //Main stimulus
 
@@ -99,16 +97,16 @@ module tb_uart_rx();
 
         */
 
-        // TC1. Normal reset time. initialize inputs
+        //TC1. Normal reset time. initialize inputs
 
         reset = 1; rx = 1;
 
-        repeat(868) @(posedge clk);
+        repeat(BIT_TIME) @(posedge clk);
         #1;
 
         reset = 0;
 
-        repeat(868) @(posedge clk);
+        repeat(BIT_TIME) @(posedge clk);
         #1;
 
         $display("");
@@ -121,8 +119,7 @@ module tb_uart_rx();
 
         $display("TC1 finished");
 
-
-        // TC2. Normal byte: send a valid byte, done should pulse once
+        //TC2. Normal byte: send a valid byte, done should pulse once
 
         $display("");
         $display("TC2 begins. (normal byte reception). byte sent: 10011101");
@@ -136,7 +133,7 @@ module tb_uart_rx();
 
         //done should go back to 0 next cycle
 
-        repeat(868) @(posedge clk);
+        repeat(BIT_TIME) @(posedge clk);
         #1;
 
         if (done !== 1'b0)
@@ -146,13 +143,12 @@ module tb_uart_rx();
 
         $display("TC2 finished");
 
-
-        // TC3. Missing stop bit: FSM should go to ERROR, done should NOT pulse
+        //TC3. Missing stop bit: FSM should go to ERROR, done should NOT pulse
 
         $display("");
         $display("TC3 begins. (missing stop bit - framing error). byte sent: 00101010");
 
-        repeat(2604) @(posedge clk);
+        repeat(3*BIT_TIME) @(posedge clk);
         #1;
 
         send_byte(8'b00101010, 0);   //stop_bit = 0, deliberately broken frame
@@ -165,27 +161,26 @@ module tb_uart_rx();
         //recover: bring line HIGH to exit ERROR state
 
         rx = 1;
-        repeat(2604) @(posedge clk);
+        repeat(3*BIT_TIME) @(posedge clk);
         #1;
 
         $display("TC3 finished");
 
-
-        // TC4. Reset during reception: FSM should return to IDLE mid-frame
+        //TC4. Reset during reception: FSM should return to IDLE mid-frame
 
         $display("");
         $display("TC4 begins. (reset during reception)");
 
-        rx = 0; repeat(868) @(posedge clk); #1;   //start bit
-        rx = 1; repeat(868) @(posedge clk); #1;   //bit 0
-        rx = 1; repeat(868) @(posedge clk); #1;   //bit 1
+        rx = 0; repeat(BIT_TIME) @(posedge clk); #1;   //start bit
+        rx = 1; repeat(BIT_TIME) @(posedge clk); #1;   //bit 0
+        rx = 1; repeat(BIT_TIME) @(posedge clk); #1;   //bit 1
         rx = 1;                                    //bit 2
 
         //WE PRESS RESET
 
         reset = 1;
 
-        repeat(868) @(posedge clk);
+        repeat(BIT_TIME) @(posedge clk);
         #1;
 
         reset = 0;
@@ -196,13 +191,12 @@ module tb_uart_rx();
             $display("PASS TC4. reset correctly returns FSM to IDLE mid-frame");
 
         rx = 1;
-        repeat(2604) @(posedge clk);
+        repeat(3*BIT_TIME) @(posedge clk);
         #1;
 
         $display("TC4 finished");
 
-
-        // TC5. Back to back bytes: second byte sent immediately after first byte stop bit
+        //TC5. Back to back bytes: second byte sent immediately after first byte stop bit
 
         $display("");
         $display("TC5 begins. (back to back bytes). first byte sent: 11100101");
@@ -225,7 +219,7 @@ module tb_uart_rx();
         else
             $display("PASS TC5b. second byte 01000001 received correctly back-to-back (0x%h)", rx_byte);
 
-        repeat(868) @(posedge clk);
+        repeat(BIT_TIME) @(posedge clk);
         #1;
 
         $display("TC5 finished");

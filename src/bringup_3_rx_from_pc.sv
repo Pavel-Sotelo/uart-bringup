@@ -1,44 +1,35 @@
 `timescale 1ns / 1ps
 
+//Stage 3: PC terminal sends bytes to Basys 3, led shows what was received
 module top_uart_basys3_pc_rx(
-
-    input logic clk,    
+    input logic clk,
     input logic reset,
-    input logic rx, 
+    input logic rx,
     output logic led
-    
-    );
-    
+);
+
     logic [7:0] rx_byte;
     logic done;
-    
     logic led_reg;
-    
-    
+
+    //led turns on for byte A (0x41), off for byte B (0x42)
     always_ff @(posedge clk) begin
-    
-        if(reset)
+        if (reset)
             led_reg <= 1'd0;
         else if (done && (rx_byte == 8'h41))
-            led_reg <= 1'd1;            
+            led_reg <= 1'd1;
         else if (done && (rx_byte == 8'h42))
-            led_reg <= 1'd0;         
-    
+            led_reg <= 1'd0;
     end
-    
-    
-    
-    uart_rx RX (
 
+    uart_rx RX (
         .clk(clk),
         .reset(reset),
         .rx(rx),
         .rx_byte(rx_byte),
         .done(done)
+    );
 
-    );       
-    
-    assign led = led_reg;    
-    
+    assign led = led_reg;
 
 endmodule
